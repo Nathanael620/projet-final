@@ -1,3 +1,5 @@
+import* as popper from'@popperjs/core';
+window.popper= popper;
 import axios from 'axios';
 window.axios = axios;
 
