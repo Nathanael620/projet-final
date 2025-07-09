@@ -3,13 +3,13 @@
 @section('content')
 <div class="container py-4">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
+        <div class="col-md-8">
             <!-- En-tête de la conversation -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0 me-3">
-                            <i class="fas fa-user-circle fa-2x text-muted"></i>
+                            <i class="fas fa-user-circle fa-3x text-muted"></i>
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="mb-1">
@@ -20,16 +20,17 @@
                                     <span class="badge bg-primary ms-2">Étudiant</span>
                                 @endif
                             </h5>
-                            <p class="text-muted small mb-0">
-                                {{ $otherUser->getSkillsString() }}
-                                @if($otherUser->isTutor())
-                                    • {!! $otherUser->getRatingStars() !!} ({{ $otherUser->rating ?? 0 }})
-                                @endif
-                            </p>
+                            <p class="text-muted mb-1">{{ $otherUser->email }}</p>
+                            @if($otherUser->isTutor())
+                                <div class="d-flex align-items-center">
+                                    {!! $otherUser->getRatingStars() !!}
+                                    <small class="text-muted ms-2">({{ $otherUser->rating ?? 0 }}) - {{ $otherUser->total_sessions ?? 0 }} séances</small>
+                                </div>
+                            @endif
                         </div>
                         <div class="flex-shrink-0">
                             <a href="{{ route('messages.index') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-arrow-left me-1"></i>
+                                <i class="fas fa-arrow-left me-2"></i>
                                 Retour
                             </a>
                         </div>
@@ -37,50 +38,38 @@
                 </div>
             </div>
 
-            <!-- Zone des messages -->
+            <!-- Messages -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body" style="height: 400px; overflow-y: auto;" id="messages-container">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-comments text-primary me-2"></i>
+                        Conversation
+                    </h6>
+                </div>
+                <div class="card-body" id="messages-container" style="height: 400px; overflow-y: auto;">
                     @if($messages->count() > 0)
                         @foreach($messages as $message)
                             <div class="message-item mb-3 {{ $message->sender_id === auth()->id() ? 'text-end' : 'text-start' }}">
                                 <div class="d-inline-block {{ $message->sender_id === auth()->id() ? 'bg-primary text-white' : 'bg-light' }} rounded p-3" style="max-width: 70%;">
-                                    @if($message->sender_id !== auth()->id())
-                                        <small class="d-block mb-1 text-muted">
-                                            {{ $message->sender->name }}
-                                        </small>
-                                    @endif
-                                    
                                     <div class="message-content">
-                                        @if($message->type === 'text')
-                                            <p class="mb-1">{{ $message->content }}</p>
-                                        @elseif($message->type === 'file')
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-file me-2"></i>
-                                                <a href="{{ asset('storage/' . $message->file_path) }}" target="_blank" class="text-decoration-none">
-                                                    Fichier joint
-                                                </a>
-                                            </div>
-                                        @elseif($message->type === 'image')
-                                            <img src="{{ asset('storage/' . $message->file_path) }}" alt="Image" class="img-fluid rounded" style="max-width: 200px;">
-                                        @endif
+                                        {{ $message->content }}
                                     </div>
-                                    
-                                    <small class="d-block mt-1 {{ $message->sender_id === auth()->id() ? 'text-white-50' : 'text-muted' }}">
-                                        {{ $message->created_at->format('H:i') }}
-                                        @if($message->is_read && $message->sender_id === auth()->id())
-                                            <i class="fas fa-check-double ms-1"></i>
-                                        @elseif($message->sender_id === auth()->id())
-                                            <i class="fas fa-check ms-1"></i>
-                                        @endif
-                                    </small>
+                                    <div class="message-meta mt-2">
+                                        <small class="{{ $message->sender_id === auth()->id() ? 'text-white-50' : 'text-muted' }}">
+                                            {{ $message->created_at->format('d/m/Y H:i') }}
+                                            @if($message->sender_id === auth()->id())
+                                                <i class="fas fa-check-double ms-1 {{ $message->is_read ? 'text-info' : '' }}"></i>
+                                            @endif
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
                     @else
-                        <div class="text-center py-5">
-                            <i class="fas fa-comments fa-2x text-muted mb-3"></i>
-                            <p class="text-muted">Aucun message dans cette conversation</p>
-                            <p class="text-muted small">Envoyez le premier message !</p>
+                        <div class="text-center py-4">
+                            <i class="fas fa-comment-slash fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun message pour le moment</p>
+                            <p class="text-muted small">Commencez la conversation !</p>
                         </div>
                     @endif
                 </div>
@@ -89,53 +78,171 @@
             <!-- Formulaire d'envoi -->
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('messages.store', ['user' => $otherUser->id]) }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('messages.store', $otherUser) }}" id="message-form">
                         @csrf
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <textarea name="content" class="form-control @error('content') is-invalid @enderror" 
-                                          rows="3" placeholder="Tapez votre message..." required>{{ old('content') }}</textarea>
-                                @error('content')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-8">
-                                <div class="input-group">
-                                    <input type="file" name="file" class="form-control @error('file') is-invalid @enderror" 
-                                           accept="image/*,.pdf,.doc,.docx,.txt">
-                                    @error('file')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <small class="text-muted">Formats acceptés : images, PDF, documents (max 10MB)</small>
-                            </div>
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-paper-plane me-2"></i>
-                                    Envoyer
-                                </button>
-                            </div>
+                        <div class="input-group">
+                            <textarea name="content" id="message-content" class="form-control" 
+                                      rows="3" placeholder="Tapez votre message..." required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        <div class="col-md-4">
+            <!-- Profil de l'utilisateur -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">Profil</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-circle fa-4x text-muted"></i>
+                    </div>
+                    
+                    <h6 class="text-center mb-2">{{ $otherUser->name }}</h6>
+                    <p class="text-muted text-center small mb-3">{{ $otherUser->email }}</p>
+                    
+                    @if($otherUser->phone)
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-phone me-2"></i>{{ $otherUser->phone }}
+                        </small>
+                    </div>
+                    @endif
+                    
+                    @if($otherUser->bio)
+                    <div class="mb-3">
+                        <small class="text-muted">{{ Str::limit($otherUser->bio, 100) }}</small>
+                    </div>
+                    @endif
+                    
+                    @if($otherUser->skills)
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Compétences :</small>
+                        @foreach(array_slice($otherUser->skills, 0, 3) as $skill)
+                            <span class="badge bg-light text-dark me-1 mb-1">{{ $skill }}</span>
+                        @endforeach
+                    </div>
+                    @endif
+                    
+                    @if($otherUser->isTutor())
+                    <div class="text-center">
+                        <div class="mb-2">
+                            <strong class="text-success">{{ number_format($otherUser->hourly_rate ?? 20, 2) }}€</strong>
+                            <small class="text-muted">/heure</small>
+                        </div>
+                        <a href="{{ route('tutors.show', $otherUser) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-2"></i>
+                            Voir le profil complet
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">Actions rapides</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if($otherUser->isTutor() && auth()->user()->isStudent())
+                            <a href="{{ route('sessions.create', ['tutor_id' => $otherUser->id]) }}" class="btn btn-success">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                Demander une séance
+                            </a>
+                        @endif
+                        
+                        @if(auth()->user()->isTutor() && $otherUser->isStudent())
+                            <a href="{{ route('sessions.create') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>
+                                Proposer une séance
+                            </a>
+                        @endif
+                        
+                        <a href="{{ route('messages.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Retour aux messages
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Séances en commun -->
+            @if($commonSessions->count() > 0)
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">Séances en commun</h6>
+                </div>
+                <div class="card-body">
+                    @foreach($commonSessions->take(3) as $session)
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-shrink-0 me-2">
+                            <i class="fas fa-calendar-check text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="d-block">{{ Str::limit($session->title, 25) }}</small>
+                            <small class="text-muted">{{ $session->scheduled_at->format('d/m/Y') }}</small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge {{ $session->getStatusBadgeClass() }}">{{ $session->getStatusText() }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                    
+                    @if($commonSessions->count() > 3)
+                    <div class="text-center mt-2">
+                        <small class="text-muted">+{{ $commonSessions->count() - 3 }} autres séances</small>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+        </div>
     </div>
 </div>
 
+@push('scripts')
 <script>
-// Scroll automatique vers le bas
 document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('messages-container');
-    container.scrollTop = container.scrollHeight;
-});
-
-// Auto-resize du textarea
-document.querySelector('textarea[name="content"]').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
+    const messagesContainer = document.getElementById('messages-container');
+    const messageForm = document.getElementById('message-form');
+    const messageContent = document.getElementById('message-content');
+    
+    // Scroll vers le bas des messages
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Scroll initial
+    scrollToBottom();
+    
+    // Gestion de l'envoi du formulaire
+    messageForm.addEventListener('submit', function(e) {
+        if (messageContent.value.trim() === '') {
+            e.preventDefault();
+            return;
+        }
+        
+        // Désactiver le bouton pendant l'envoi
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    });
+    
+    // Auto-resize du textarea
+    messageContent.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
 });
 </script>
+@endpush
 
 <style>
 .message-item .bg-primary {

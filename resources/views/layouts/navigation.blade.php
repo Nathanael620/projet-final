@@ -19,7 +19,21 @@
                             {{ Auth::user()->name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
+                            <li>
+                                <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">
+                                    {{ __('Profile') }}
+                                </x-nav-link>
+                            </li>
+                            <li>
+                                <x-nav-link :href="route('payments.wallet')" :active="request()->routeIs('payments.wallet')">
+                                    {{ __('Portefeuille') }}
+                                </x-nav-link>
+                            </li>
+                            <li>
+                                <x-nav-link :href="route('payments.history')" :active="request()->routeIs('payments.history')">
+                                    {{ __('Paiements') }}
+                                </x-nav-link>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">

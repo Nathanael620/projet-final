@@ -9,12 +9,30 @@ use Illuminate\View\View;
 
 class TutorController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $tutors = User::where('role', 'tutor')
-            ->where('is_available', true)
-            ->orderBy('rating', 'desc')
-            ->paginate(12);
+        $query = User::where('role', 'tutor')
+            ->where('is_available', true);
+        
+        // Filtre par matière (si implémenté dans les compétences)
+        if ($request->filled('subject')) {
+            $subject = $request->subject;
+            $query->whereJsonContains('skills', $subject);
+        }
+        
+        // Filtre par niveau
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+        
+        // Filtre par prix maximum
+        if ($request->filled('max_price')) {
+            $query->where('hourly_rate', '<=', $request->max_price);
+        }
+        
+        $tutors = $query->orderBy('rating', 'desc')
+            ->paginate(12)
+            ->withQueryString();
             
         return view('tutors.index', compact('tutors'));
     }

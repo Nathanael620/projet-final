@@ -208,20 +208,86 @@
     </div>
     @endif
 
-    <!-- Séances récentes (placeholder) -->
+    <!-- Séances récentes -->
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-history text-secondary me-2"></i>
-                        Séances récentes
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history text-secondary me-2"></i>
+                            Séances récentes
+                        </h5>
+                        <a href="{{ route('sessions.index') }}" class="btn btn-outline-primary btn-sm">
+                            Voir toutes
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                    <h6 class="text-muted">Aucune séance récente</h6>
-                    <p class="text-muted small">Vos séances apparaîtront ici</p>
+                <div class="card-body">
+                    @if($recentSessions->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>{{ $user->isTutor() ? 'Étudiant' : 'Tuteur' }}</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($recentSessions as $session)
+                                    <tr>
+                                        <td>
+                                            <strong>{{ Str::limit($session->title, 30) }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ $session->getSubjectText() }}</small>
+                                        </td>
+                                        <td>
+                                            @if($user->isTutor())
+                                                {{ $session->student->name }}
+                                            @else
+                                                {{ $session->tutor->name }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <small>{{ $session->scheduled_at->format('d/m/Y H:i') }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $session->getStatusBadgeClass() }}">
+                                                {{ $session->getStatusText() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('sessions.show', $session) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">Aucune séance récente</h6>
+                            <p class="text-muted small">
+                                @if($user->isStudent())
+                                    Vous n'avez pas encore demandé de séance de soutien.
+                                @else
+                                    Aucune demande de séance ne vous a été adressée.
+                                @endif
+                            </p>
+                            @if($user->isStudent())
+                                <a href="{{ route('sessions.create') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Demander une séance
+                                </a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

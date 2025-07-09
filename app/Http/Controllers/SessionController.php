@@ -10,21 +10,32 @@ use Illuminate\Http\RedirectResponse;
 
 class SessionController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = auth()->user();
         
         if ($user->isTutor()) {
-            $sessions = $user->tutorSessions()
-                ->with(['student', 'tutor'])
-                ->orderBy('scheduled_at', 'desc')
-                ->paginate(10);
+            $query = $user->tutorSessions()->with(['student', 'tutor']);
         } else {
-            $sessions = $user->studentSessions()
-                ->with(['student', 'tutor'])
-                ->orderBy('scheduled_at', 'desc')
-                ->paginate(10);
+            $query = $user->studentSessions()->with(['student', 'tutor']);
         }
+        
+        // Filtres
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('subject')) {
+            $query->where('subject', $request->subject);
+        }
+        
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        $sessions = $query->orderBy('scheduled_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
         
         return view('sessions.index', compact('sessions'));
     }

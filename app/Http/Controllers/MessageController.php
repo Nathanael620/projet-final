@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Models\Session;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -48,13 +49,6 @@ class MessageController extends Controller
     {
         $user = auth()->user();
         
-        // Debug: vérifier que $otherUser est bien résolu
-        \Log::info('MessageController@show', [
-            'otherUser_id' => $otherUser->id,
-            'otherUser_name' => $otherUser->name,
-            'current_user_id' => $user->id
-        ]);
-        
         // Récupérer tous les messages entre les deux utilisateurs
         $messages = Message::where(function ($query) use ($user, $otherUser) {
                 $query->where('sender_id', $user->id)
@@ -74,7 +68,21 @@ class MessageController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => now()]);
         
-        return view('messages.show', compact('messages', 'otherUser'));
+        // Récupérer les séances en commun
+        $commonSessions = collect();
+        if ($user->isTutor() && $otherUser->isStudent()) {
+            $commonSessions = Session::where('tutor_id', $user->id)
+                ->where('student_id', $otherUser->id)
+                ->orderBy('scheduled_at', 'desc')
+                ->get();
+        } elseif ($user->isStudent() && $otherUser->isTutor()) {
+            $commonSessions = Session::where('tutor_id', $otherUser->id)
+                ->where('student_id', $user->id)
+                ->orderBy('scheduled_at', 'desc')
+                ->get();
+        }
+        
+        return view('messages.show', compact('messages', 'otherUser', 'commonSessions'));
     }
 
     public function store(Request $request, User $otherUser): RedirectResponse

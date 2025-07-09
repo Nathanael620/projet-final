@@ -17,11 +17,8 @@ return new class extends Migration
             $table->enum('role', ['student', 'tutor', 'admin'])->default('student')->after('bio');
             $table->json('skills')->nullable()->after('role');
             $table->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner')->after('skills');
-            $table->string('avatar')->nullable()->after('level');
-            $table->boolean('is_available')->default(true)->after('avatar');
+            $table->boolean('is_available')->default(true)->after('level');
             $table->decimal('hourly_rate', 8, 2)->nullable()->after('is_available');
-            $table->decimal('rating', 3, 2)->default(0.00)->after('hourly_rate');
-            $table->integer('total_sessions')->default(0)->after('rating');
         });
     }
 
@@ -37,11 +34,8 @@ return new class extends Migration
                 'role',
                 'skills',
                 'level',
-                'avatar',
                 'is_available',
-                'hourly_rate',
-                'rating',
-                'total_sessions'
+                'hourly_rate'
             ]);
         });
     }

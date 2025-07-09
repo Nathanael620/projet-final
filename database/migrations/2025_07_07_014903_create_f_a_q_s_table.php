@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'answered', 'closed'])->default('pending');
             $table->integer('votes')->default(0);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_public')->default(true);
             $table->timestamps();
         });
     }

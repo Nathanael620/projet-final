@@ -5,13 +5,15 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,14 @@ class User extends Authenticatable
         'hourly_rate', // for tutors
         'rating', // average rating
         'total_sessions', // number of sessions completed
+        'is_active', // account status
+        'deactivated_at', // when account was deactivated
+        'deactivation_reason', // reason for deactivation
+        'last_login_at', // last login timestamp
+        'last_activity_at', // last activity timestamp
+        'last_ip', // last IP address
+        'last_user_agent', // last user agent
+        'is_public_profile', // profile visibility
     ];
 
     /**
@@ -57,6 +67,11 @@ class User extends Authenticatable
             'skills' => 'array',
             'is_available' => 'boolean',
             'rating' => 'decimal:2',
+            'is_active' => 'boolean',
+            'deactivated_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'last_activity_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
     }
 
@@ -181,5 +196,117 @@ class User extends Authenticatable
         }
         
         return round($feedbacks->avg('rating'), 2);
+    }
+
+    /**
+     * Get user's level as a formatted string
+     */
+    public function getLevelText(): string
+    {
+        return match($this->level) {
+            'beginner' => 'Débutant',
+            'intermediate' => 'Intermédiaire',
+            'advanced' => 'Avancé',
+            default => 'Non spécifié'
+        };
+    }
+
+    /**
+     * Get user's skills as formatted badges
+     */
+    public function getSkillsBadges(): array
+    {
+        if (empty($this->skills)) {
+            return [];
+        }
+
+        $skillLabels = [
+            'mathematics' => 'Mathématiques',
+            'physics' => 'Physique',
+            'chemistry' => 'Chimie',
+            'biology' => 'Biologie',
+            'computer_science' => 'Informatique',
+            'languages' => 'Langues',
+            'literature' => 'Littérature',
+            'history' => 'Histoire',
+            'geography' => 'Géographie',
+            'economics' => 'Économie',
+            'philosophy' => 'Philosophie',
+            'art' => 'Art',
+            'music' => 'Musique',
+            'sports' => 'Sport',
+            'other' => 'Autre'
+        ];
+
+        $badges = [];
+        foreach ($this->skills as $skill) {
+            $badges[] = $skillLabels[$skill] ?? ucfirst($skill);
+        }
+
+        return $badges;
+    }
+
+    /**
+     * Get user's availability status text
+     */
+    public function getAvailabilityText(): string
+    {
+        return $this->is_available ? 'Disponible' : 'Indisponible';
+    }
+
+    /**
+     * Get user's availability status class
+     */
+    public function getAvailabilityClass(): string
+    {
+        return $this->is_available ? 'success' : 'danger';
+    }
+
+    /**
+     * Get user's total earnings (for tutors)
+     */
+    public function getTotalEarnings(): float
+    {
+        if (!$this->isTutor()) {
+            return 0;
+        }
+        
+        return $this->tutorSessions()
+            ->where('status', 'completed')
+            ->sum('price');
+    }
+
+    /**
+     * Get user's total spent (for students)
+     */
+    public function getTotalSpent(): float
+    {
+        if (!$this->isStudent()) {
+            return 0;
+        }
+        
+        return $this->studentSessions()
+            ->where('status', 'completed')
+            ->sum('price');
+    }
+
+    /**
+     * Get user's completion rate
+     */
+    public function getCompletionRate(): float
+    {
+        $totalSessions = $this->isTutor() 
+            ? $this->tutorSessions()->count() 
+            : $this->studentSessions()->count();
+            
+        if ($totalSessions === 0) {
+            return 0;
+        }
+        
+        $completedSessions = $this->isTutor() 
+            ? $this->tutorSessions()->where('status', 'completed')->count() 
+            : $this->studentSessions()->where('status', 'completed')->count();
+            
+        return round(($completedSessions / $totalSessions) * 100, 1);
     }
 }
