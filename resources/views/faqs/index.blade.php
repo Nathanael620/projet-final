@@ -11,13 +11,61 @@
                         <i class="fas fa-question-circle text-primary me-2"></i>
                         Questions Fréquentes
                     </h1>
-                    <p class="text-muted mb-0">Gérez les questions et réponses de la communauté</p>
+                    <p class="text-muted mb-0">Gérez les questions et réponses de la communauté avec l'aide de l'IA</p>
                 </div>
-                <a href="{{ route('faqs.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>
-                    Nouvelle Question
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('faqs.chatbot') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-robot me-2"></i>
+                        Chatbot IA
+                    </a>
+                    <a href="{{ route('faqs.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouvelle Question
+                    </a>
+                </div>
             </div>
+
+            <!-- Statistiques IA -->
+            @if(isset($stats))
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="fas fa-question-circle fa-2x text-primary mb-2"></i>
+                            <h4 class="mb-0">{{ $stats['total'] }}</h4>
+                            <small class="text-muted">Total FAQ</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="fas fa-globe fa-2x text-success mb-2"></i>
+                            <h4 class="mb-0">{{ $stats['public'] }}</h4>
+                            <small class="text-muted">FAQ Publiques</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                            <h4 class="mb-0">{{ $stats['popular'] }}</h4>
+                            <small class="text-muted">FAQ Populaires</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                            <h4 class="mb-0">{{ $stats['recent'] }}</h4>
+                            <small class="text-muted">Nouvelles (7j)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Filtres -->
             <div class="card border-0 shadow-sm mb-4">

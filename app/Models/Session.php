@@ -22,6 +22,7 @@ class Session extends Model
         'level',
         'type',
         'status',
+        'reminder_sent',
         'scheduled_at',
         'duration_minutes',
         'price',
@@ -33,6 +34,7 @@ class Session extends Model
     protected $casts = [
         'scheduled_at' => 'datetime',
         'price' => 'decimal:2',
+        'reminder_sent' => 'boolean',
     ];
 
     // Relations

@@ -34,6 +34,19 @@
                     </small>
                 </div>
             </div>
+
+            <!-- Gestion des sessions -->
+            <div class="col-md-6">
+                <div class="d-grid">
+                    <a href="{{ route('profile.sessions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Gérer les sessions
+                    </a>
+                    <small class="text-muted mt-1">
+                        Voir et gérer toutes vos sessions actives
+                    </small>
+                </div>
+            </div>
         </div>
 
         <!-- Informations de session -->

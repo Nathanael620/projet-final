@@ -90,6 +90,51 @@ class FAQSeeder extends Seeder
                 'status' => 'answered',
                 'votes' => rand(0, 15),
                 'is_featured' => rand(0, 1),
+                'created_at' => now()->subDays(rand(1, 30)),
+                'updated_at' => now()->subDays(rand(0, 10)),
+            ]);
+        }
+
+        // Ajouter des FAQ générées par IA (simulation)
+        $aiGeneratedFaqs = [
+            [
+                'question' => 'Comment optimiser ma recherche de tuteur ?',
+                'answer' => 'Pour optimiser votre recherche, utilisez les filtres par matière, niveau et disponibilité. Consultez les avis et notes des tuteurs, et n\'hésitez pas à les contacter avant de réserver.',
+                'category' => 'general',
+                'is_public' => true,
+                'votes' => 8,
+                'is_featured' => true,
+            ],
+            [
+                'question' => 'Quels sont les avantages du système de portefeuille ?',
+                'answer' => 'Le portefeuille vous permet de gérer vos fonds facilement, d\'éviter les frais de transaction répétés, et de bénéficier de réductions sur les séances multiples. Vous pouvez aussi recevoir des remboursements automatiques.',
+                'category' => 'payment',
+                'is_public' => true,
+                'votes' => 12,
+                'is_featured' => true,
+            ],
+            [
+                'question' => 'Comment gérer mes disponibilités en tant que tuteur ?',
+                'answer' => 'Dans votre profil tuteur, vous pouvez définir vos créneaux disponibles par jour de la semaine. Vous pouvez aussi bloquer des périodes spécifiques et ajuster vos tarifs selon la demande.',
+                'category' => 'sessions',
+                'is_public' => true,
+                'votes' => 6,
+                'is_featured' => false,
+            ],
+        ];
+
+        foreach ($aiGeneratedFaqs as $faqData) {
+            FAQ::create([
+                'user_id' => $users->random()->id,
+                'question' => $faqData['question'],
+                'answer' => $faqData['answer'],
+                'category' => $faqData['category'],
+                'is_public' => $faqData['is_public'],
+                'status' => 'answered',
+                'votes' => $faqData['votes'],
+                'is_featured' => $faqData['is_featured'],
+                'created_at' => now()->subDays(rand(1, 15)),
+                'updated_at' => now()->subDays(rand(0, 5)),
             ]);
         }
 

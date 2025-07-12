@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Models\UserSession;
 use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -170,6 +171,10 @@ class ProfileController extends Controller
     public function logoutAllDevices(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $currentSessionId = $request->session()->getId();
+
+        // Déconnecter toutes les sessions de l'utilisateur sauf la session actuelle
+        UserSession::deactivateAllUserSessions($user->id, $currentSessionId);
 
         // Invalider tous les tokens de l'utilisateur
         $user->tokens()->delete();
@@ -181,6 +186,61 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::route('login')->with('success', 'Vous avez été déconnecté de tous vos appareils.');
+    }
+
+    /**
+     * Show user sessions management
+     */
+    public function sessions(Request $request): View
+    {
+        $user = $request->user();
+        
+        try {
+            $sessions = $user->sessions()
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $activeSessionsCount = $user->activeSessions()->count();
+            $totalSessionsCount = $user->sessions()->count();
+
+            return view('profile.sessions', compact('sessions', 'activeSessionsCount', 'totalSessionsCount'));
+        } catch (\Exception $e) {
+            // Log l'erreur pour le débogage
+            \Log::error('Error in sessions method: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            // Retourner une vue d'erreur ou rediriger
+            abort(500, 'Erreur lors du chargement des sessions: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Logout from specific session
+     */
+    public function logoutSession(Request $request, $sessionId): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Vérifier que la session appartient à l'utilisateur
+        $userSession = $user->sessions()->where('session_id', $sessionId)->first();
+        
+        if (!$userSession) {
+            return Redirect::back()->withErrors(['session' => 'Session non trouvée.']);
+        }
+
+        // Déconnecter la session spécifique
+        UserSession::deactivateSession($sessionId);
+
+        // Si c'est la session actuelle, déconnecter l'utilisateur
+        if ($sessionId === $request->session()->getId()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return Redirect::route('login')->with('success', 'Vous avez été déconnecté de cet appareil.');
+        }
+
+        return Redirect::back()->with('success', 'Session déconnectée avec succès.');
     }
 
     /**

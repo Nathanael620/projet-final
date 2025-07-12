@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'profile.access' => \App\Http\Middleware\ProfileAccess::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
         ]);
+        
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackUserSession::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

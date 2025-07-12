@@ -18,11 +18,15 @@ class Message extends Model
         'file_path',
         'is_read',
         'read_at',
+        'is_edited',
+        'edited_at',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'is_edited' => 'boolean',
+        'edited_at' => 'datetime',
     ];
 
     // Relations

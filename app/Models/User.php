@@ -111,6 +111,32 @@ class User extends Authenticatable
         return $this->hasMany(Feedback::class, 'reviewed_id');
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'notifiable_id')
+            ->where('notifiable_type', User::class);
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(UserSession::class);
+    }
+
+    public function activeSessions(): HasMany
+    {
+        return $this->sessions()->where('is_active', true);
+    }
+
+    public function unreadNotifications(): HasMany
+    {
+        return $this->notifications()->unread();
+    }
+
+    public function readNotifications(): HasMany
+    {
+        return $this->notifications()->read();
+    }
+
     /**
      * Check if user is a tutor
      */
@@ -171,6 +197,22 @@ class User extends Authenticatable
     public function getUnreadMessagesCount(): int
     {
         return $this->receivedMessages()->where('is_read', false)->count();
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function getUnreadNotificationsCount(): int
+    {
+        return $this->unreadNotifications()->count();
+    }
+
+    /**
+     * Mark all notifications as read
+     */
+    public function markAllNotificationsAsRead(): void
+    {
+        $this->unreadNotifications()->update(['read_at' => now()]);
     }
 
     /**

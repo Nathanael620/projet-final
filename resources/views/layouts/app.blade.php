@@ -33,5 +33,19 @@
         <main>
             @yield('content')
         </main>
+        
+        <!-- Scripts -->
+        @stack('scripts')
+        
+        <!-- Bootstrap Initialization -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize Bootstrap dropdowns
+                var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+                var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                    return new bootstrap.Dropdown(dropdownToggleEl);
+                });
+            });
+        </script>
     </body>
 </html>
