@@ -152,7 +152,7 @@
                             <p class="text-muted small mb-2">{{ $user->email }}</p>
                             @if($user->phone)
                                 <p class="text-muted small mb-2">
-                                    <i class="fas fa-phone me-1"></i>{{ $user->phone }}
+                                    <i class="fas fa-phone me-1"></i>{{ $user->canViewPhone(auth()->user()) ? $user->phone : $user->getMaskedPhone() }}
                                 </p>
                             @endif
                             <div class="mb-2">

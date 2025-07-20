@@ -103,12 +103,12 @@ class User extends Authenticatable
 
     public function givenFeedbacks(): HasMany
     {
-        return $this->hasMany(Feedback::class, 'reviewer_id');
+        return $this->hasMany(Feedbacks::class, 'reviewer_id');
     }
 
     public function receivedFeedbacks(): HasMany
     {
-        return $this->hasMany(Feedback::class, 'reviewed_id');
+        return $this->hasMany(Feedbacks::class, 'reviewed_id');
     }
 
     public function notifications(): HasMany
@@ -135,6 +135,22 @@ class User extends Authenticatable
     public function readNotifications(): HasMany
     {
         return $this->notifications()->read();
+    }
+
+    /**
+     * Get the payments made by the user.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'user_id');
+    }
+
+    /**
+     * Get the wallet associated with the user.
+     */
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class, 'user_id');
     }
 
     /**
@@ -350,5 +366,35 @@ class User extends Authenticatable
             : $this->studentSessions()->where('status', 'completed')->count();
             
         return round(($completedSessions / $totalSessions) * 100, 1);
+    }
+
+    /**
+     * Get masked phone number for privacy
+     */
+    public function getMaskedPhone(): string
+    {
+        if (!$this->phone) {
+            return 'Non renseigné';
+        }
+        
+        return 'Numéro masqué pour la confidentialité';
+    }
+
+    /**
+     * Check if phone number should be visible (only for admin or own profile)
+     */
+    public function canViewPhone(User $viewer = null): bool
+    {
+        // Admin can always see phone numbers
+        if ($viewer && $viewer->isAdmin()) {
+            return true;
+        }
+        
+        // User can see their own phone number
+        if ($viewer && $viewer->id === $this->id) {
+            return true;
+        }
+        
+        return false;
     }
 }

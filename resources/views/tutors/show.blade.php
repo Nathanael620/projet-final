@@ -66,7 +66,7 @@
                                         <li><i class="fas fa-envelope me-2"></i>{{ $tutor->email }}</li>
                                         @endif
                                         @if($tutor->phone)
-                                        <li><i class="fas fa-phone me-2"></i>{{ $tutor->phone }}</li>
+                                        <li><i class="fas fa-phone me-2"></i>{{ $tutor->canViewPhone(auth()->user()) ? $tutor->phone : $tutor->getMaskedPhone() }}</li>
                                         @endif
                                         <li><i class="fas fa-clock me-2"></i>
                                             @if($tutor->is_available)

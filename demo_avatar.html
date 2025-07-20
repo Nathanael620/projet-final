@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démonstration - Système d'Avatar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <style>
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+        .avatar-container img:hover {
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        .avatar-loading {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            padding: 10px;
+        }
+        .demo-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-5">
+                    <i class="fas fa-user-circle text-primary"></i>
+                    Démonstration du Système d'Avatar
+                </h1>
+                
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Instructions</h5>
+                    <p>Cette page démontre les fonctionnalités du système d'avatar. Pour tester complètement :</p>
+                    <ol>
+                        <li>Accédez à <code>http://localhost:8000/profile</code></li>
+                        <li>Connectez-vous avec un compte utilisateur</li>
+                        <li>Testez l'upload et le recadrage d'images</li>
+                    </ol>
+                </div>
+
+                <div class="demo-section">
+                    <h3><i class="fas fa-camera"></i> Fonctionnalités Implémentées</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>✅ Upload d'Avatar</h5>
+                            <ul>
+                                <li>Formats supportés : JPG, PNG, GIF</li>
+                                <li>Taille maximale : 2MB</li>
+                                <li>Validation automatique</li>
+                                <li>Redimensionnement automatique à 400x400px</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>✅ Recadrage d'Image</h5>
+                            <ul>
+                                <li>Interface interactive avec Cropper.js</li>
+                                <li>Aspect ratio 1:1 (carré)</li>
+                                <li>Prévisualisation en temps réel</li>
+                                <li>Compression JPEG avec qualité 85%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3><i class="fas fa-cogs"></i> Configuration Technique</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>🔧 Backend (Laravel 10)</h5>
+                            <ul>
+                                <li><strong>Intervention Image v3</strong> pour le traitement</li>
+                                <li><strong>AvatarService</strong> pour la logique métier</li>
+                                <li><strong>AvatarController</strong> pour les routes API</li>
+                                <li><strong>Stockage sécurisé</strong> dans storage/app/public/avatars</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>🎨 Frontend (JavaScript)</h5>
+                            <ul>
+                                <li><strong>AvatarManager</strong> pour l'interaction</li>
+                                <li><strong>Cropper.js</strong> pour le recadrage</li>
+                                <li><strong>Bootstrap 5</strong> pour l'interface</li>
+                                <li><strong>Notifications</strong> en temps réel</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3><i class="fas fa-route"></i> Routes API Disponibles</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Méthode</th>
+                                    <th>Route</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">POST</span></td>
+                                    <td><code>/avatar/upload</code></td>
+                                    <td>Upload d'un nouvel avatar</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">DELETE</span></td>
+                                    <td><code>/avatar/remove</code></td>
+                                    <td>Suppression de l'avatar actuel</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-info">GET</span></td>
+                                    <td><code>/avatar/{userId?}</code></td>
+                                    <td>Récupération de l'URL d'un avatar</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">POST</span></td>
+                                    <td><code>/avatar/crop</code></td>
+                                    <td>Recadrage d'une image</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3><i class="fas fa-shield-alt"></i> Sécurité</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>🔒 Mesures Implémentées</h5>
+                            <ul>
+                                <li>Validation des types MIME</li>
+                                <li>Limitation de taille (2MB)</li>
+                                <li>Protection CSRF</li>
+                                <li>Noms de fichiers sécurisés</li>
+                                <li>Stockage dans dossier public sécurisé</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>⚡ Performance</h5>
+                            <ul>
+                                <li>Compression JPEG optimisée</li>
+                                <li>Redimensionnement automatique</li>
+                                <li>Cache navigateur</li>
+                                <li>Lazy loading des images</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-section bg-light">
+                    <h3><i class="fas fa-rocket"></i> Prêt à Utiliser !</h3>
+                    <p class="lead text-center">
+                        Le système d'avatar est entièrement fonctionnel et prêt à être utilisé par vos utilisateurs.
+                    </p>
+                    <div class="text-center">
+                        <a href="http://localhost:8000/profile" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-edit"></i>
+                            Tester le Système d'Avatar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+</body>
+</html> 

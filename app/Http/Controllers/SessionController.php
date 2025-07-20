@@ -7,9 +7,19 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Mail\SessionCreatedMail;
+use Illuminate\Support\Facades\Mail;
+use App\Services\PushNotificationService;
 
 class SessionController extends Controller
 {
+    protected PushNotificationService $pushNotificationService;
+
+    public function __construct(PushNotificationService $pushNotificationService)
+    {
+        $this->pushNotificationService = $pushNotificationService;
+    }
+
     public function index(Request $request): View
     {
         $user = auth()->user();
@@ -65,9 +75,10 @@ class SessionController extends Controller
         ]);
 
         $tutor = User::findOrFail($request->tutor_id);
+        $student = auth()->user();
         
         $session = Session::create([
-            'student_id' => auth()->id(),
+            'student_id' => $student->id,
             'tutor_id' => $request->tutor_id,
             'title' => $request->title,
             'description' => $request->description,
@@ -80,6 +91,13 @@ class SessionController extends Controller
             'location' => $request->location,
             'status' => 'pending',
         ]);
+
+        // Envoi du mail aux deux acteurs
+        Mail::to($student->email)->send(new SessionCreatedMail($session, 'student'));
+        Mail::to($tutor->email)->send(new SessionCreatedMail($session, 'tutor'));
+
+        // Envoi des notifications push
+        $this->pushNotificationService->notifySessionCreated($session);
 
         return redirect()->route('sessions.show', $session)
             ->with('success', 'Demande de séance créée avec succès !');
@@ -120,6 +138,13 @@ class SessionController extends Controller
             'meeting_link' => $request->meeting_link,
         ]);
         
+        // Envoi des notifications push selon le statut
+        if ($request->status === 'accepted') {
+            $this->pushNotificationService->notifySessionAccepted($session);
+        } else {
+            $this->pushNotificationService->notifySessionRejected($session);
+        }
+        
         $statusText = $request->status === 'accepted' ? 'acceptée' : 'refusée';
         
         return redirect()->route('sessions.show', $session)
@@ -136,6 +161,9 @@ class SessionController extends Controller
         }
         
         $session->update(['status' => 'cancelled']);
+        
+        // Envoi de la notification push d'annulation
+        $this->pushNotificationService->notifySessionCancelled($session, $user);
         
         return redirect()->route('sessions.index')
             ->with('success', 'Séance annulée avec succès !');

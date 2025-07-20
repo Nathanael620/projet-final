@@ -53,6 +53,12 @@ return [
         'default_public_profile' => true,
         'show_email_to_public' => false,
         'show_phone_to_public' => false,
+        'phone_visibility' => [
+            'admin_can_view' => true,
+            'user_can_view_own' => true,
+            'others_can_view' => false,
+            'masked_message' => 'Numéro masqué pour la confidentialité',
+        ],
     ],
 
     'notifications' => [

@@ -1,6 +1,7 @@
 class AvatarManager {
     constructor() {
         this.initializeEventListeners();
+        this.currentFile = null;
     }
 
     initializeEventListeners() {
@@ -33,10 +34,7 @@ class AvatarManager {
             return;
         }
 
-        // Prévisualisation
-        this.showPreview(file);
-
-        // Upload automatique
+        this.currentFile = file;
         this.uploadAvatar(file);
     }
 
@@ -47,25 +45,13 @@ class AvatarManager {
         return allowedTypes.includes(file.type) && file.size <= maxSize;
     }
 
-    showPreview(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const preview = document.getElementById('avatar-preview');
-            if (preview) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-
     async uploadAvatar(file) {
-        const formData = new FormData();
-        formData.append('avatar', file);
-
         try {
             this.showLoading(true);
-            
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
             const response = await fetch('/avatar/upload', {
                 method: 'POST',
                 body: formData,
@@ -78,12 +64,16 @@ class AvatarManager {
 
             if (data.success) {
                 this.showSuccess(data.message);
-                // Mettre à jour l'avatar dans la navigation si présent
-                this.updateNavigationAvatar(data.avatar_url);
+                this.updateAvatarDisplay(data.avatar_url);
+                this.resetAvatarInput();
             } else {
-                this.showError('Erreur lors du téléchargement de l\'avatar.');
+                this.showError(data.message || 'Erreur lors de l\'upload');
+                if (data.errors) {
+                    console.error('Validation errors:', data.errors);
+                }
             }
         } catch (error) {
+            console.error('Upload error:', error);
             this.showError('Erreur de connexion. Veuillez réessayer.');
         } finally {
             this.showLoading(false);
@@ -93,16 +83,17 @@ class AvatarManager {
     async handleAvatarRemove(event) {
         event.preventDefault();
 
-        if (!confirm('Êtes-vous sûr de vouloir supprimer votre avatar ?')) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer votre photo de profil ?')) {
             return;
         }
 
         try {
             this.showLoading(true);
-            
+
             const response = await fetch('/avatar/remove', {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             });
@@ -111,46 +102,56 @@ class AvatarManager {
 
             if (data.success) {
                 this.showSuccess(data.message);
-                this.resetAvatar();
+                this.updateAvatarDisplay(data.default_avatar_url);
+                this.resetAvatarInput();
+                
+                // Masquer le bouton de suppression
+                const removeBtn = document.querySelector('.remove-avatar-btn');
+                if (removeBtn) {
+                    removeBtn.style.display = 'none';
+                }
             } else {
-                this.showError('Erreur lors de la suppression de l\'avatar.');
+                this.showError(data.message || 'Erreur lors de la suppression');
             }
         } catch (error) {
+            console.error('Remove error:', error);
             this.showError('Erreur de connexion. Veuillez réessayer.');
         } finally {
             this.showLoading(false);
         }
     }
 
-    resetAvatar() {
-        const preview = document.getElementById('avatar-preview');
-        if (preview) {
-            preview.src = '/images/default-avatar.png';
+    updateAvatarDisplay(avatarUrl) {
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (avatarPreview) {
+            avatarPreview.src = avatarUrl;
+            avatarPreview.style.display = 'block';
         }
 
-        const input = document.getElementById('avatar');
-        if (input) {
-            input.value = '';
-        }
+        // Mettre à jour tous les avatars sur la page
+        const allAvatars = document.querySelectorAll('img[data-avatar]');
+        allAvatars.forEach(avatar => {
+            avatar.src = avatarUrl;
+        });
     }
 
-    updateNavigationAvatar(avatarUrl) {
-        const navAvatar = document.querySelector('.nav-avatar');
-        if (navAvatar) {
-            navAvatar.src = avatarUrl;
+    resetAvatarInput() {
+        const avatarInput = document.getElementById('avatar');
+        if (avatarInput) {
+            avatarInput.value = '';
         }
-    }
-
-    openAvatarModal() {
-        const modal = new bootstrap.Modal(document.getElementById('avatarModal'));
-        modal.show();
     }
 
     showLoading(show) {
-        const loadingSpinner = document.getElementById('avatar-loading');
-        if (loadingSpinner) {
-            loadingSpinner.style.display = show ? 'block' : 'none';
+        const loadingElement = document.querySelector('.avatar-loading');
+        if (loadingElement) {
+            loadingElement.style.display = show ? 'block' : 'none';
         }
+
+        const avatarBtns = document.querySelectorAll('.avatar-btn');
+        avatarBtns.forEach(btn => {
+            btn.disabled = show;
+        });
     }
 
     showSuccess(message) {
@@ -158,30 +159,66 @@ class AvatarManager {
     }
 
     showError(message) {
-        this.showNotification(message, 'danger');
+        this.showNotification(message, 'error');
     }
 
     showNotification(message, type) {
+        // Créer une notification Bootstrap
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        
         const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
         notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         notification.innerHTML = `
+            <i class="fas ${icon} me-2"></i>
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
 
         document.body.appendChild(notification);
 
-        // Auto-remove after 5 seconds
+        // Auto-suppression après 5 secondes
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.remove();
             }
         }, 5000);
     }
+
+    openAvatarModal() {
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (!avatarPreview || !avatarPreview.src) return;
+
+        // Créer un modal simple pour afficher l'avatar en grand
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Photo de profil</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="${avatarPreview.src}" class="img-fluid rounded" style="max-width: 100%;">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
 }
 
-// Initialiser le gestionnaire d'avatar quand le DOM est chargé
-document.addEventListener('DOMContentLoaded', () => {
+// Initialisation automatique
+document.addEventListener('DOMContentLoaded', function() {
     new AvatarManager();
 }); 

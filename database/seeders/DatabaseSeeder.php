@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             MessageSeeder::class,
             FAQSeeder::class,
             WalletSeeder::class,
+            FeedbackSeeder::class,
         ]);
     }
 }

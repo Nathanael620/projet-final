@@ -29,7 +29,6 @@ class ProfileUpdateRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'bio' => ['nullable', 'string', 'max:1000'],
             'level' => ['required', 'in:beginner,intermediate,advanced'],
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ];
 
         // Règles spécifiques aux tuteurs
@@ -54,9 +53,6 @@ class ProfileUpdateRequest extends FormRequest
             'bio.max' => 'La bio ne peut pas dépasser 1000 caractères.',
             'level.required' => 'Le niveau est obligatoire.',
             'level.in' => 'Le niveau doit être débutant, intermédiaire ou avancé.',
-            'avatar.image' => 'Le fichier doit être une image.',
-            'avatar.mimes' => 'L\'image doit être au format JPEG, PNG, JPG ou GIF.',
-            'avatar.max' => 'L\'image ne peut pas dépasser 2MB.',
             'skills.array' => 'Les compétences doivent être une liste.',
             'skills.*.string' => 'Chaque compétence doit être un texte.',
             'skills.*.max' => 'Chaque compétence ne peut pas dépasser 100 caractères.',

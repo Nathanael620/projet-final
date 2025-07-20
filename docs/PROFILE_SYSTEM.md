@@ -23,6 +23,7 @@ Le système de profil utilisateur de la plateforme de tutorat offre une gestion 
 - **Changement de mot de passe** : Avec validation et conseils
 - **Suppression de compte** : Processus sécurisé avec confirmation
 - **Profil public/privé** : Contrôle de la visibilité
+- **Protection du numéro de téléphone** : Masqué par défaut, visible uniquement par l'utilisateur lui-même et les administrateurs
 
 ### 4. Statistiques et analytics
 - **Séances totales et terminées**
@@ -63,6 +64,8 @@ Le système de profil utilisateur de la plateforme de tutorat offre une gestion 
 - getTotalEarnings() : Gains totaux (tuteurs)
 - getTotalSpent() : Dépenses totales (étudiants)
 - getCompletionRate() : Taux de complétion
+- getMaskedPhone() : Numéro de téléphone masqué pour la confidentialité
+- canViewPhone() : Vérifie si un utilisateur peut voir le numéro de téléphone
 ```
 
 ### Middleware

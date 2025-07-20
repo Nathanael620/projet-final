@@ -200,4 +200,43 @@ class ProfileTest extends TestCase
 
         $response->assertSessionHasErrors(['skills.*']);
     }
+
+    public function test_phone_number_is_masked_for_privacy(): void
+    {
+        $user = User::factory()->create(['phone' => '0123456789']);
+        $otherUser = User::factory()->create(['phone' => '0987654321']);
+
+        // L'utilisateur peut voir son propre numéro
+        $this->assertTrue($user->canViewPhone($user));
+        $this->assertEquals('0123456789', $user->phone);
+
+        // Un autre utilisateur ne peut pas voir le numéro
+        $this->assertFalse($user->canViewPhone($otherUser));
+        $this->assertEquals('Numéro masqué pour la confidentialité', $user->getMaskedPhone());
+
+        // Un admin peut voir tous les numéros
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->assertTrue($user->canViewPhone($admin));
+    }
+
+    public function test_phone_number_display_in_views(): void
+    {
+        $user = User::factory()->create(['phone' => '0123456789']);
+        $otherUser = User::factory()->create(['phone' => '0987654321']);
+
+        // L'utilisateur voit son propre numéro
+        $response = $this->actingAs($user)
+            ->get(route('profile.show', $user));
+
+        $response->assertStatus(200);
+        $response->assertSee('0123456789');
+
+        // L'autre utilisateur ne voit pas le numéro
+        $response = $this->actingAs($otherUser)
+            ->get(route('profile.show', $user));
+
+        $response->assertStatus(200);
+        $response->assertSee('Numéro masqué pour la confidentialité');
+        $response->assertDontSee('0123456789');
+    }
 }

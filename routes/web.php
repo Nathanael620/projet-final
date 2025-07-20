@@ -11,6 +11,9 @@ use App\Http\Controllers\FAQController;
 use App\Http\Controllers\FAQChatbotController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\FeedbackController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +55,18 @@ Route::middleware(['auth'])->group(function () {
     // Avatar management
     Route::post('/avatar/upload', [AvatarController::class, 'upload'])->name('avatar.upload');
     Route::delete('/avatar/remove', [AvatarController::class, 'remove'])->name('avatar.remove');
+    Route::get('/avatar/{userId?}', [AvatarController::class, 'getAvatar'])->name('avatar.get');
+    Route::post('/avatar/crop', [AvatarController::class, 'crop'])->name('avatar.crop');
+    
+    // Test route pour avatar
+    Route::get('/test-avatar', function () {
+        return view('test_avatar_upload');
+    })->name('test.avatar');
+    
+    // Test simple pour avatar
+    Route::get('/test-simple-avatar', function () {
+        return view('test_simple_avatar');
+    })->name('test.simple.avatar');
     
     // Tuteurs
     Route::get('/tutors', [TutorController::class, 'index'])->name('tutors.index');
@@ -114,6 +129,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payments/{session}/create', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/payments/{session}/process', [PaymentController::class, 'process'])->name('payments.process');
     Route::get('/payments/{payment}/success', [PaymentController::class, 'success'])->name('payments.success');
+    
+    // Routes de feedback et notation
+    Route::get('/feedback/{session}/create', [FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback/{session}', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/feedback/my-feedbacks', [FeedbackController::class, 'myFeedbacks'])->name('feedback.my-feedbacks');
+    Route::get('/feedback/{feedback}/edit', [FeedbackController::class, 'edit'])->name('feedback.edit');
+    Route::put('/feedback/{feedback}', [FeedbackController::class, 'update'])->name('feedback.update');
+    Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('feedback.destroy');
+    Route::get('/users/{user}/feedbacks', [FeedbackController::class, 'userFeedbacks'])->name('feedback.user-feedbacks');
 });
 
 // Routes pour les notifications
@@ -125,4 +149,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notifications/delete-read', [App\Http\Controllers\NotificationController::class, 'deleteRead'])->name('notifications.delete-read');
     Route::get('/notifications/unread', [App\Http\Controllers\NotificationController::class, 'getUnread'])->name('notifications.unread');
     Route::get('/notifications/stats', [App\Http\Controllers\NotificationController::class, 'getStats'])->name('notifications.stats');
+     
+
+Route::get('/profile/sessions', [ProfileController::class, 'sessions'])->name('profile.sessions');
+
 });

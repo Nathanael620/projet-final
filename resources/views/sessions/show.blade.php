@@ -175,6 +175,44 @@
                 </div>
             </div>
             @endif
+
+            @if($session->status === 'completed')
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Séance terminée</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Cette séance est terminée. N'oubliez pas de noter votre expérience !
+                    </div>
+                    
+                    @php
+                        $user = auth()->user();
+                        $feedbackType = $user->isTutor() ? 'tutor_to_student' : 'student_to_tutor';
+                        $existingFeedback = $session->feedbacks()
+                            ->where('reviewer_id', $user->id)
+                            ->where('type', $feedbackType)
+                            ->first();
+                    @endphp
+                    
+                    @if($existingFeedback)
+                        <div class="alert alert-success">
+                            <i class="fas fa-star me-2"></i>
+                            Vous avez déjà noté cette séance avec {{ $existingFeedback->rating }}/5 étoiles.
+                            <a href="{{ route('feedback.edit', $existingFeedback) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                Modifier
+                            </a>
+                        </div>
+                    @else
+                        <a href="{{ route('feedback.create', $session) }}" class="btn btn-warning">
+                            <i class="fas fa-star me-2"></i>
+                            Noter cette séance
+                        </a>
+                    @endif
+                </div>
+            </div>
+            @endif
         </div>
 
         <div class="col-md-4">

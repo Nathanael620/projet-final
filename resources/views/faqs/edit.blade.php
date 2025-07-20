@@ -2,140 +2,161 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <!-- En-tête -->
-            <div class="d-flex align-items-center mb-4">
-                <a href="{{ route('faqs.show', $faq) }}" class="btn btn-outline-secondary me-3">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <div>
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-edit text-warning me-2"></i>
-                        Modifier la Question
-                    </h1>
-                    <p class="text-muted mb-0">Modifiez les détails de cette question</p>
-                </div>
-            </div>
+    <!-- Messages de succès -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-            <!-- Formulaire -->
+    <!-- En-tête du profil -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('faqs.update', $faq) }}">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="mb-3">
-                            <label for="question" class="form-label">
-                                Question <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="question" id="question" 
-                                   class="form-control @error('question') is-invalid @enderror" 
-                                   value="{{ old('question', $faq->question) }}" required maxlength="255">
-                            @error('question')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="category" class="form-label">
-                                Catégorie <span class="text-danger">*</span>
-                            </label>
-                            <select name="category" id="category" 
-                                    class="form-select @error('category') is-invalid @enderror" required>
-                                <option value="">Sélectionnez une catégorie</option>
-                                <option value="general" {{ old('category', $faq->category) === 'general' ? 'selected' : '' }}>
-                                    Général
-                                </option>
-                                <option value="technical" {{ old('category', $faq->category) === 'technical' ? 'selected' : '' }}>
-                                    Technique
-                                </option>
-                                <option value="payment" {{ old('category', $faq->category) === 'payment' ? 'selected' : '' }}>
-                                    Paiement
-                                </option>
-                                <option value="sessions" {{ old('category', $faq->category) === 'sessions' ? 'selected' : '' }}>
-                                    Séances
-                                </option>
-                                <option value="account" {{ old('category', $faq->category) === 'account' ? 'selected' : '' }}>
-                                    Compte
-                                </option>
-                            </select>
-                            @error('category')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="answer" class="form-label">
-                                Réponse <span class="text-danger">*</span>
-                            </label>
-                            <textarea name="answer" id="answer" rows="6" 
-                                      class="form-control @error('answer') is-invalid @enderror" 
-                                      required maxlength="2000">{{ old('answer', $faq->answer) }}</textarea>
-                            @error('answer')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">
-                                Fournissez une réponse détaillée et utile. 
-                                Vous pouvez utiliser du formatage Markdown.
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="is_public" id="is_public" 
-                                       class="form-check-input" value="1" 
-                                       {{ old('is_public', $faq->is_public) ? 'checked' : '' }}>
-                                <label for="is_public" class="form-check-label">
-                                    Rendre cette question publique
-                                </label>
-                                <div class="form-text">
-                                    Les questions publiques sont visibles par tous les utilisateurs
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="position-relative mb-3">
+                                @if($user->avatar)
+                                    <img src="{{ Storage::url($user->avatar) }}" 
+                                         alt="{{ $user->name }}" 
+                                         class="rounded-circle" 
+                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                @else
+                                    <i class="fas fa-user-circle fa-6x text-muted"></i>
+                                @endif
+                                <div class="position-absolute bottom-0 end-0">
+                                    <span class="badge bg-{{ $user->isTutor() ? 'success' : 'primary' }} fs-6">
+                                        {{ $user->isTutor() ? 'Tuteur' : 'Étudiant' }}
+                                    </span>
                                 </div>
                             </div>
+                            <h4 class="mb-1">{{ $user->name }}</h4>
+                            <p class="text-muted mb-0">{{ ucfirst($user->level) }}</p>
                         </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-save me-2"></i>
-                                Mettre à jour
-                            </button>
-                            <a href="{{ route('faqs.show', $faq) }}" class="btn btn-outline-secondary">
-                                Annuler
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Informations -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="fas fa-info-circle text-info me-2"></i>
-                        Informations sur cette question
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Auteur :</strong> {{ $faq->user->name }}</p>
-                            <p class="mb-1"><strong>Créée le :</strong> {{ $faq->created_at->format('d/m/Y à H:i') }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Dernière modification :</strong> {{ $faq->updated_at->format('d/m/Y à H:i') }}</p>
-                            <p class="mb-0"><strong>Statut :</strong> 
-                                @if($faq->is_public)
-                                    <span class="badge bg-success">Public</span>
-                                @else
-                                    <span class="badge bg-secondary">Privé</span>
-                                @endif
-                            </p>
+                        <div class="col-md-9">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-primary mb-1">{{ $stats['total_sessions'] }}</h5>
+                                        <small class="text-muted">Séances totales</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-success mb-1">{{ $stats['completed_sessions'] }}</h5>
+                                        <small class="text-muted">Séances terminées</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        @if($user->isTutor())
+                                            <h5 class="text-warning mb-1">{{ number_format($stats['total_earnings'], 2) }}€</h5>
+                                            <small class="text-muted">Gains totaux</small>
+                                        @else
+                                            <h5 class="text-warning mb-1">{{ number_format($stats['total_spent'], 2) }}€</h5>
+                                            <small class="text-muted">Dépenses totales</small>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-info mb-1">{{ $stats['unread_messages'] }}</h5>
+                                        <small class="text-muted">Messages non lus</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <!-- Informations du profil -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-edit text-primary me-2"></i>
+                        Informations du profil
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+
+                        @include('profile.partials.update-profile-information-form')
+
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Photo de profil</label>
+                            <input type="file" name="avatar" id="avatar" class="form-control @error('avatar') is-invalid @enderror">
+                            @error('avatar')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Sauvegarder
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            @if($user->isTutor())
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog text-success me-2"></i>
+                        Paramètres tuteur
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @include('profile.partials.tutor-settings')
+                </div>
+            </div>
+            @endif
+
+            <div class="card border-0 shadow-sm mb-4">
+                <x-security-info :user="$user" />
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <x-session-manager :user="$user" />
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4" id="password-section">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lock text-warning me-2"></i>
+                        Sécurité
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @include('profile.partials.update-password-form')
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0 text-danger">
+                        <i class="fas fa-trash me-2"></i>
+                        Zone dangereuse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @include('profile.partials.delete-user-form')
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            @include('profile.partials.sidebar-actions', ['user' => $user])
+        </div>
+    </div>
 </div>
-@endsection 
+@endsection

@@ -140,18 +140,18 @@
                                         
                                         <div class="flex-shrink-0 ms-3">
                                             <div class="btn-group" role="group">
-                                                <a href="{{ route('faqs.show', $faq) }}" class="btn btn-outline-primary btn-sm">
+                                                <a href="{{ route('faqs.show', $faq) }}" class="btn btn-outline-primary btn-sm" title="Voir la question">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 @if($faq->user_id === auth()->id() || auth()->user()->isAdmin())
-                                                    <a href="{{ route('faqs.edit', $faq) }}" class="btn btn-outline-warning btn-sm">
+                                                    <a href="{{ route('faqs.edit', $faq) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <form method="POST" action="{{ route('faqs.destroy', $faq) }}" 
                                                           class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
@@ -167,7 +167,7 @@
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $faqs->links() }}
+                    {{ $faqs->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <div class="text-center py-5">

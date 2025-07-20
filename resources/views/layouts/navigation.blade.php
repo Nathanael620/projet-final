@@ -63,6 +63,11 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item d-flex align-items-center me-2">
+                    <button id="darkModeToggle" class="btn btn-outline-secondary btn-sm" title="Activer/désactiver le mode sombre">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
                 @auth
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -91,6 +96,12 @@
                                 <a class="dropdown-item" href="{{ route('payments.history') }}">
                                     <i class="fas fa-history me-2"></i>
                                     {{ __('Paiements') }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('feedback.my-feedbacks') }}">
+                                    <i class="fas fa-star me-2"></i>
+                                    {{ __('Mes avis') }}
                                 </a>
                             </li>
                             @if(auth()->user()->isAdmin())

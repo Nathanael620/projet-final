@@ -10,6 +10,7 @@ Une plateforme web moderne pour connecter étudiants et tuteurs, développée av
 - **Rôles** : Étudiant, Tuteur, Administrateur
 - **Compétences** : Gestion des compétences des tuteurs
 - **Évaluations** : Système de notation et commentaires
+- **Confidentialité** : Protection des données personnelles (numéro de téléphone masqué)
 
 ### 📚 Gestion des séances
 - **Demande de séance** : Les étudiants peuvent demander des séances de soutien
@@ -18,6 +19,7 @@ Une plateforme web moderne pour connecter étudiants et tuteurs, développée av
 - **Statuts** : En attente, Acceptée, Terminée, Annulée
 - **Planification** : Gestion des dates et heures de séances
 - **Prix** : Calcul automatique basé sur le tarif horaire du tuteur
+- **Notifications push** : Notifications en temps réel pour tous les événements de séances
 
 ### 💬 Système de messagerie
 - **Conversations** : Messagerie privée entre utilisateurs

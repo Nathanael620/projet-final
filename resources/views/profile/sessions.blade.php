@@ -1,8 +1,68 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row">
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Liste des Sessions</h2>
+
+    {{-- Message de succès --}}
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Tableau des sessions --}}
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Nom de la Session</th>
+                        <th>Date de Début</th>
+                        <th>Date de Fin</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($sessions as $index => $session)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $session->nom }}</td>
+                        <td>{{ $session->date_debut }}</td>
+                        <td>{{ $session->date_fin }}</td>
+                        <td>
+                            @if ($session->active)
+                                <span class="badge bg-success">Active</span>
+                            @else
+                                <span class="badge bg-secondary">Inactive</span>
+                            @endif
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-primary">Voir</a>
+                            <a href="#" class="btn btn-sm btn-warning">Modifier</a>
+                            <form action="#" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette session ?')">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center">Aucune session disponible pour l’instant.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Ensuite tu peux continuer avec le reste de ton contenu --}}
+    <div class="row mt-5">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0">
@@ -85,7 +145,7 @@
                 </div>
             </div>
 
-            <!-- Liste des sessions -->
+            <!-- Liste des sessions détaillée -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="card-title mb-0">
@@ -216,4 +276,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

@@ -159,7 +159,7 @@
                     @if($otherUser->phone)
                     <div class="mb-2">
                         <small class="text-muted">
-                            <i class="fas fa-phone me-2"></i>{{ $otherUser->phone }}
+                            <i class="fas fa-phone me-2"></i>{{ $otherUser->canViewPhone(auth()->user()) ? $otherUser->phone : $otherUser->getMaskedPhone() }}
                         </small>
                     </div>
                     @endif

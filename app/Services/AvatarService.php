@@ -5,10 +5,18 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AvatarService
 {
+    protected $imageManager;
+
+    public function __construct()
+    {
+        $this->imageManager = new ImageManager(new Driver());
+    }
+
     /**
      * Upload and process user avatar
      */
@@ -18,23 +26,20 @@ class AvatarService
         $this->deleteAvatar($user);
 
         // Générer un nom unique pour le fichier
-        $filename = $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = $user->id . '_' . time() . '.jpg';
         $path = 'avatars/' . $filename;
 
         // Redimensionner et optimiser l'image
-        $image = Image::make($file);
+        $image = $this->imageManager->read($file);
         
         // Redimensionner à 400x400 pixels maximum
-        $image->resize(400, 400, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
+        $image->scaleDown(400, 400);
 
         // Convertir en JPEG pour une meilleure compression
-        $image->encode('jpg', 85);
+        $imageData = $image->toJpeg(85);
 
         // Sauvegarder l'image
-        Storage::disk('public')->put($path, $image);
+        Storage::disk('public')->put($path, $imageData);
 
         return $path;
     }
@@ -135,16 +140,15 @@ class AvatarService
     {
         $deletedCount = 0;
         $avatarFiles = Storage::disk('public')->files('avatars');
-
+        
         foreach ($avatarFiles as $file) {
             $userId = $this->extractUserIdFromFilename($file);
-            
             if ($userId && !User::where('id', $userId)->exists()) {
                 Storage::disk('public')->delete($file);
                 $deletedCount++;
             }
         }
-
+        
         return $deletedCount;
     }
 
@@ -153,28 +157,11 @@ class AvatarService
      */
     private function extractUserIdFromFilename(string $filename): ?int
     {
-        $pathInfo = pathinfo($filename);
-        $parts = explode('_', $pathInfo['filename']);
-        
-        return is_numeric($parts[0]) ? (int) $parts[0] : null;
-    }
-
-    /**
-     * Get avatar statistics
-     */
-    public function getAvatarStats(): array
-    {
-        $totalAvatars = Storage::disk('public')->files('avatars');
-        $totalSize = 0;
-
-        foreach ($totalAvatars as $file) {
-            $totalSize += Storage::disk('public')->size($file);
+        $basename = basename($filename);
+        if (preg_match('/^(\d+)_/', $basename, $matches)) {
+            return (int) $matches[1];
         }
-
-        return [
-            'total_avatars' => count($totalAvatars),
-            'total_size_mb' => round($totalSize / 1024 / 1024, 2),
-            'average_size_kb' => count($totalAvatars) > 0 ? round($totalSize / 1024 / count($totalAvatars), 2) : 0,
-        ];
+        
+        return null;
     }
 } 

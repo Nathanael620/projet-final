@@ -116,7 +116,7 @@
                     @if($user->phone)
                     <div class="mb-2">
                         <small class="text-muted d-block">
-                            <i class="fas fa-phone me-2"></i>{{ $user->phone }}
+                            <i class="fas fa-phone me-2"></i>{{ $user->canViewPhone(auth()->user()) ? $user->phone : $user->getMaskedPhone() }}
                         </small>
                     </div>
                     @endif
@@ -151,6 +151,11 @@
                                 </a>
                             @endif
                         @endif
+                        
+                        <a href="{{ route('feedback.user-feedbacks', $user) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-star me-2"></i>
+                            Voir les avis
+                        </a>
                         
                         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>
